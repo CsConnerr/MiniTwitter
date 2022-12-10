@@ -20,7 +20,7 @@ import javax.swing.tree.DefaultTreeModel;
 public class AdminControlPanel extends JFrame {
 
   private static AdminControlPanel instance = null;
-  private final List<Group> groups;
+  private final ArrayList<Group> groups;
   private final ArrayList<User> users;
   private final ArrayList<String> userNames;
   private final ArrayList<String> groupNames;
@@ -31,6 +31,7 @@ public class AdminControlPanel extends JFrame {
   private DefaultMutableTreeNode root;
   private DefaultTreeModel treeModel;
   private String sUser;
+  private long CreationTime;
 
 
   private AdminControlPanel() {
@@ -57,7 +58,7 @@ public class AdminControlPanel extends JFrame {
     tree = new JTree(treeModel);
 
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    setBounds(100, 100, 535, 350);
+    setBounds(100, 100, 535, 400);
     setTitle("Twitter");
     contentPane = new JPanel();
     contentPane.setBackground(new Color(29, 161, 242));
@@ -87,10 +88,22 @@ public class AdminControlPanel extends JFrame {
 
           JOptionPane.showMessageDialog(null, "Enter Username", "ERROR",
               JOptionPane.INFORMATION_MESSAGE);
+        }
+
+        if (UserTA.getText().contains(" ")) {
+
+          JOptionPane.showMessageDialog(null, "No Spaces!", "ERROR",
+              JOptionPane.INFORMATION_MESSAGE);
         } else {
           if (!userNames.contains(UserTA.getText())) {
             if (tree.getSelectionPath() == null) {
+
               User user = new User(UserTA.getText());
+
+              CreationTime = System.currentTimeMillis();
+
+              user.setCreationTime(CreationTime);
+
               DefaultMutableTreeNode unode = new DefaultMutableTreeNode(user);
               users.add(user);
               userNames.add(UserTA.getText());
@@ -99,7 +112,13 @@ public class AdminControlPanel extends JFrame {
             } else {
               DefaultMutableTreeNode Node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
               if (Node == root) {
+
                 User user = new User(UserTA.getText());
+
+                CreationTime = System.currentTimeMillis();
+
+                user.setCreationTime(CreationTime);
+
                 DefaultMutableTreeNode unode = new DefaultMutableTreeNode(user);
                 users.add(user);
                 userNames.add(UserTA.getText());
@@ -107,7 +126,13 @@ public class AdminControlPanel extends JFrame {
                 root.add(unode);
               }
               if (Node.getUserObject() instanceof Group) {
+
                 User user = new User(UserTA.getText());
+
+                CreationTime = System.currentTimeMillis();
+
+                user.setCreationTime(CreationTime);
+
                 DefaultMutableTreeNode unode = new DefaultMutableTreeNode(user);
                 users.add(user);
                 userNames.add(UserTA.getText());
@@ -115,7 +140,13 @@ public class AdminControlPanel extends JFrame {
                 Node.add(unode);
               }
               if (Node.getUserObject() instanceof User) {
+
                 User user = new User(UserTA.getText());
+
+                CreationTime = System.currentTimeMillis();
+
+                user.setCreationTime(CreationTime);
+
                 DefaultMutableTreeNode unode = new DefaultMutableTreeNode(user);
                 DefaultMutableTreeNode parent = (DefaultMutableTreeNode) Node.getParent();
                 users.add(user);
@@ -153,10 +184,20 @@ public class AdminControlPanel extends JFrame {
         if (groupText.getText().equals("")) {
           JOptionPane.showMessageDialog(null, "Enter Group Name", "ERROR",
               JOptionPane.INFORMATION_MESSAGE);
+        }
+
+        if (groupText.getText().contains(" ")) {
+
+          JOptionPane.showMessageDialog(null, "No Spaces!", "ERROR",
+              JOptionPane.INFORMATION_MESSAGE);
         } else {
           if (!groupNames.contains(groupText.getText())) {
             if (tree.getSelectionPath() == null) {
+
               Group group = new Group(groupText.getText());
+
+              CreationTime = System.currentTimeMillis();
+
               DefaultMutableTreeNode gnode = new DefaultMutableTreeNode(group);
               groups.add(group);
               groupNames.add(groupText.getText());
@@ -164,7 +205,11 @@ public class AdminControlPanel extends JFrame {
             } else {
               DefaultMutableTreeNode Node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
               if (Node == root) {
+
                 Group group = new Group(groupText.getText());
+
+                CreationTime = System.currentTimeMillis();
+
                 DefaultMutableTreeNode gnode = new DefaultMutableTreeNode(group);
                 groups.add(group);
                 groupNames.add(groupText.getText());
@@ -176,7 +221,11 @@ public class AdminControlPanel extends JFrame {
                 groupNames.add(groupText.getText());
                 Node.add(gnode);
               } else if (userNames.contains(Node.getUserObject().toString())) {
+
                 Group group = new Group(groupText.getText());
+
+                CreationTime = System.currentTimeMillis();
+
                 DefaultMutableTreeNode gnode = new DefaultMutableTreeNode(group);
                 groups.add(group);
                 groupNames.add(groupText.getText());
@@ -266,7 +315,80 @@ public class AdminControlPanel extends JFrame {
       }
     });
     contentPane.add(totalPos);
+
+    JButton Verify = new JButton("Verify User");
+    Verify.setBounds(220, 315, 155, 55);
+    Verify.addActionListener(new ActionListener() {
+
+      public void actionPerformed(ActionEvent evt) {
+        if (users.size() == 0 && groups.size() == 0) {
+          JOptionPane.showMessageDialog(null, "No Users or Groups", "ERROR",
+              JOptionPane.INFORMATION_MESSAGE);
+        } else {
+          boolean unique = false;
+          for (String u : userNames) {
+            if (groupNames.contains(u)) {
+              unique = false;
+            } else {
+              unique = true;
+            }
+          }
+          for (String g : groupNames) {
+            if (userNames.contains(g)) {
+              unique = false;
+            } else {
+              unique = true;
+            }
+          }
+          if (unique) {
+            JOptionPane.showMessageDialog(null, "All Users and Groups are unique", "Verification",
+                JOptionPane.INFORMATION_MESSAGE);
+          } else {
+            JOptionPane.showMessageDialog(null, "Users and Groups are not unique", "Verification",
+                JOptionPane.INFORMATION_MESSAGE);
+          }
+        }
+      }
+    });
+    contentPane.add(Verify);
+
+    JButton lastUpdated = new JButton("Last Updated");
+    lastUpdated.setBounds(375, 315, 155, 55);
+    lastUpdated.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        if (users.size() == 0) {
+          JOptionPane.showMessageDialog(null, "No Updates", "ERROR",
+              JOptionPane.INFORMATION_MESSAGE);
+        } else {
+          int twtcnt = 0;
+          for (User u : users) {
+            twtcnt = twtcnt + u.getTweets().size();
+          }
+
+          if (twtcnt == 0) {
+            JOptionPane.showMessageDialog(null, "No Updates", "ERROR",
+                JOptionPane.INFORMATION_MESSAGE);
+          } else {
+            long last = users.get(0).getLastUpdated();
+
+            String lastUpdated = users.get(0).getID();
+
+            for (User u : users) {
+              if (u.getLastUpdated() > last) {
+                last = u.getLastUpdated();
+                lastUpdated = u.getID();
+              }
+            }
+            JOptionPane.showMessageDialog(null, "Last Updated User: " + lastUpdated, "Last Updated",
+                JOptionPane.INFORMATION_MESSAGE);
+          }
+        }
+      }
+    });
+
+    contentPane.add(lastUpdated);
   }
+
 
   private void Nodes(JTree tree, int index, int row) {
     for (int i = index; i < row; ++i) {

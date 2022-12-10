@@ -3,12 +3,15 @@ package com;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -27,6 +30,8 @@ public class UserView extends JFrame {
   private JList FeedList;
   private DefaultListModel<String> followingModel;
   private DefaultListModel<String> feedModel;
+
+  private long lastUpdated = 0;
 
 
   public UserView(User user, ArrayList<String> userIDs, ArrayList<User> users,
@@ -99,6 +104,18 @@ public class UserView extends JFrame {
     FeedScroll.setBounds(33, 336, 362, 113);
     contentPane.add(FeedScroll);
 
+    SimpleDateFormat formatter = new SimpleDateFormat("hh:mm:ss");
+    Date date = new Date(user.getCreationTime());
+    String CreationTime = formatter.format(date);
+
+    JLabel Creation = new JLabel("Creation Time: " + CreationTime);
+    Creation.setBounds(33, 0, 362, 16);
+    contentPane.add(Creation);
+
+    JLabel updatel = new JLabel("Last Updated: " + user.getLastUpdated());
+    updatel.setBounds(200, 0, 362, 16);
+    contentPane.add(updatel);
+
     JButton twtB = new JButton("Tweet");
     twtB.setBounds(298, 244, 97, 84);
     contentPane.add(twtB);
@@ -112,7 +129,13 @@ public class UserView extends JFrame {
         if (sendTwt.getText().length() == 0) {
           JOptionPane.showMessageDialog(null, "Tweet is empty");
         } else {
+
           user.tweet(sendTwt.getText());
+
+          long time = System.currentTimeMillis();
+          lastUpdated = time;
+          user.setLastUpdated(time);
+
           feedModel.insertElementAt(user.getFeed().get(0), 1);
           FeedList.setModel(feedModel);
 
@@ -130,6 +153,15 @@ public class UserView extends JFrame {
             userView.repaint();
           }
           sendTwt.setText("");
+
+          revalidate();
+          repaint();
+
+          Date date = new Date(user.getLastUpdated());
+          String Updatetime = formatter.format(date);
+
+          updatel.setText("Last Updated: " + Updatetime);
+
 
         }
       }
